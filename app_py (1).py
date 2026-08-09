@@ -4,42 +4,30 @@ import pandas as pd
 import joblib
 
 
-# =========================
-# Load trained model
-# =========================
-
+# Load the trained model
 try:
     model = joblib.load("titanicmodel.pkl")
 except FileNotFoundError:
-    st.error(
-        "Error: titanicmodel.pkl not found. "
-        "Make sure the file is uploaded to the GitHub repository."
-    )
+    st.error("titanicmodel.pkl not found in the repository.")
     st.stop()
 
 
-# =========================
-# Streamlit App
-# =========================
-
+# Page configuration
 st.set_page_config(
     page_title="Titanic Survival Prediction",
-    page_icon="🚢",
-    layout="centered"
+    page_icon="🚢"
 )
 
+
+# Title
 st.title("🚢 Titanic Survival Prediction")
 
 st.write(
-    "Enter the passenger information below "
-    "to predict whether the passenger survived."
+    "Enter passenger information to predict survival."
 )
 
 
-# =========================
-# User Inputs
-# =========================
-
+# Inputs
 pclass = st.selectbox(
     "Passenger Class (Pclass)",
     [1, 2, 3]
@@ -52,23 +40,23 @@ sex = st.selectbox(
 
 age = st.slider(
     "Age",
-    min_value=0,
-    max_value=100,
-    value=30
+    0,
+    100,
+    30
 )
 
 sibsp = st.slider(
-    "Siblings / Spouses Aboard (SibSp)",
-    min_value=0,
-    max_value=8,
-    value=0
+    "Siblings / Spouses Aboard",
+    0,
+    8,
+    0
 )
 
 parch = st.slider(
-    "Parents / Children Aboard (Parch)",
-    min_value=0,
-    max_value=6,
-    value=0
+    "Parents / Children Aboard",
+    0,
+    6,
+    0
 )
 
 fare = st.number_input(
@@ -84,11 +72,8 @@ embarked = st.selectbox(
 )
 
 
-# =========================
 # Prediction
-# =========================
-
-if st.button("🔮 Predict Survival"):
+if st.button("Predict Survival"):
 
     # Create input DataFrame
     input_data = pd.DataFrame({
@@ -103,52 +88,42 @@ if st.button("🔮 Predict Survival"):
 
     try:
 
-        # Prediction
+        # Make prediction
         prediction = model.predict(input_data)
 
-        # Probability
-        prediction_proba = model.predict_proba(input_data)
-
-        # =========================
-        # Display Result
-        # =========================
+        # Get probability
+        probability = model.predict_proba(input_data)
 
         if prediction[0] == 1:
 
-            probability = prediction_proba[0][1]
+            st.success("🎉 Passenger Survived!")
 
-            st.success(
-                f"🎉 Prediction: Survived!\n\n"
-                f"Survival Probability: {probability:.2%}"
+            st.write(
+                f"Survival Probability: "
+                f"{probability[0][1]:.2%}"
             )
 
         else:
 
-            probability = prediction_proba[0][0]
+            st.error("❌ Passenger Did Not Survive.")
 
-            st.error(
-                f"❌ Prediction: Not Survived.\n\n"
-                f"Survival Probability: {probability:.2%}"
+            st.write(
+                f"Survival Probability: "
+                f"{probability[0][0]:.2%}"
             )
 
     except Exception as e:
 
-        st.error(
-            "An error occurred while making the prediction."
-        )
-
+        st.error("Prediction Error:")
         st.code(str(e))
 
 
-# =========================
-# Model Information
-# =========================
-
+# Model information
 st.write("---")
 
-st.subheader("📊 Model Details")
+st.subheader("Model Details")
 
-st.write("Model: K-Nearest Neighbors (KNN)")
+st.write("Model: KNN")
 st.write("Dataset: Titanic")
 st.write("Best Model: Before PCA")
 st.write("Accuracy: 0.8212")
